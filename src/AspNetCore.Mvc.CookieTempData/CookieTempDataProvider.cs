@@ -20,6 +20,11 @@ namespace AspNetCore.Mvc.CookieTempData
 
         public CookieTempDataProvider(IDataProtectionProvider dataProtectionProvider)
         {
+            if (dataProtectionProvider == null)
+            {
+                throw new ArgumentNullException(nameof(dataProtectionProvider));
+            }
+
             _cookieName = "tmp";
             _serializer = new JsonSerializer
             {
@@ -30,20 +35,16 @@ namespace AspNetCore.Mvc.CookieTempData
             _baseProtector = dataProtectionProvider.CreateProtector(typeof(CookieTempDataProvider).FullName, "v1");
         }
 
-        private static CookieOptions CookieOptionsFor(HttpContext context)
+        private static CookieOptions CookieOptionsFor(HttpContext context) => new CookieOptions
         {
-            return new CookieOptions
-            {
-                HttpOnly = true,
-                Path = context.Request.PathBase.HasValue ? context.Request.PathBase.ToString() : "/",
-                Secure = context.Request.IsHttps,
-            };
-        }
+            HttpOnly = true,
+            Path = context.Request.PathBase.HasValue ? context.Request.PathBase.ToString() : "/",
+            Secure = context.Request.IsHttps,
+        };
 
-        private IDataProtector DataProtectorFor(HttpContext context)
-        {
-            return context.User.Identity.IsAuthenticated ? _baseProtector.CreateProtector(context.User.Identity.Name) : _baseProtector;
-        }
+        private IDataProtector DataProtectorFor(HttpContext context) => context.User.Identity.IsAuthenticated
+            ? _baseProtector.CreateProtector(context.User.Identity.Name)
+            : _baseProtector;
 
         public IDictionary<string, object> LoadTempData(HttpContext context)
         {

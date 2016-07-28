@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AspNetCore.Mvc.CookieTempData.Tests", "test\AspNetCore.Mvc.CookieTempData.Tests\AspNetCore.Mvc.CookieTempData.Tests.xproj", "{2CEB5475-408E-4285-8B79-9963FCEEB5E2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,11 +30,16 @@ Global
 		{23D7D490-EBF9-4E47-A1F6-A537D168D67D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23D7D490-EBF9-4E47-A1F6-A537D168D67D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23D7D490-EBF9-4E47-A1F6-A537D168D67D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2CEB5475-408E-4285-8B79-9963FCEEB5E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CEB5475-408E-4285-8B79-9963FCEEB5E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CEB5475-408E-4285-8B79-9963FCEEB5E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CEB5475-408E-4285-8B79-9963FCEEB5E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{23D7D490-EBF9-4E47-A1F6-A537D168D67D} = {04CE3037-5AA8-4625-916E-29BF6544F33D}
+		{2CEB5475-408E-4285-8B79-9963FCEEB5E2} = {04CE3037-5AA8-4625-916E-29BF6544F33D}
 	EndGlobalSection
 EndGlobal
