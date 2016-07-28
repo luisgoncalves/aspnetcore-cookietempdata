@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
+﻿using AspNetCore.Mvc.CookieTempData.Serialization;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Bson;
-using System.IO;
-using Microsoft.AspNetCore.DataProtection;
 
 namespace AspNetCore.Mvc.CookieTempData
 {
@@ -15,23 +13,23 @@ namespace AspNetCore.Mvc.CookieTempData
     public class CookieTempDataProvider : ITempDataProvider
     {
         private readonly string _cookieName;
-        private readonly JsonSerializer _serializer;
+        private readonly IBsonSerializer _serializer;
         private readonly IDataProtector _baseProtector;
 
-        public CookieTempDataProvider(IDataProtectionProvider dataProtectionProvider)
+        public CookieTempDataProvider(IBsonSerializer serializer, IDataProtectionProvider dataProtectionProvider)
         {
+            if (serializer == null)
+            {
+                throw new ArgumentNullException(nameof(serializer));
+            }
+
             if (dataProtectionProvider == null)
             {
                 throw new ArgumentNullException(nameof(dataProtectionProvider));
             }
 
             _cookieName = "tmp";
-            _serializer = new JsonSerializer
-            {
-                Formatting = Formatting.None,
-                NullValueHandling = NullValueHandling.Ignore,
-                TypeNameHandling = TypeNameHandling.Auto,
-            };
+            _serializer = serializer;
             _baseProtector = dataProtectionProvider.CreateProtector(typeof(CookieTempDataProvider).FullName, "v1");
         }
 
@@ -60,7 +58,7 @@ namespace AspNetCore.Mvc.CookieTempData
                 {
                     var bytes = Convert.FromBase64String(cookieValue);
                     bytes = DataProtectorFor(context).Unprotect(bytes);
-                    return Deserialize(bytes);
+                    return _serializer.Deserialize<IDictionary<string, object>>(bytes);
                 }
                 else
                 {
@@ -81,7 +79,7 @@ namespace AspNetCore.Mvc.CookieTempData
 
             if (values?.Count > 0)
             {
-                var bytes = Serialize(values);
+                var bytes = _serializer.Serialize(values);
                 bytes = DataProtectorFor(context).Protect(bytes);
                 var cookieValue = Convert.ToBase64String(bytes);
                 context.Response.Cookies.Append(_cookieName, cookieValue, CookieOptionsFor(context));
@@ -89,27 +87,6 @@ namespace AspNetCore.Mvc.CookieTempData
             else if (context.Request.Cookies.ContainsKey(_cookieName))
             {
                 context.Response.Cookies.Delete(_cookieName, CookieOptionsFor(context));
-            }
-        }
-
-        private IDictionary<string, object> Deserialize(byte[] bytes)
-        {
-            using (var ms = new MemoryStream(bytes))
-            using (var reader = new BsonReader(ms))
-            {
-                return _serializer.Deserialize<IDictionary<string, object>>(reader);
-            }
-        }
-
-        private byte[] Serialize(IDictionary<string, object> values)
-        {
-            using (var ms = new MemoryStream())
-            {
-                using (var writer = new BsonWriter(ms))
-                {
-                    _serializer.Serialize(writer, values);
-                }
-                return ms.ToArray();
             }
         }
     }

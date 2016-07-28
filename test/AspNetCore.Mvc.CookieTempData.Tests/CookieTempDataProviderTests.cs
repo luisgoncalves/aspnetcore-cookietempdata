@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
-using Xunit;
-using Moq;
+﻿using AspNetCore.Mvc.CookieTempData.Serialization;
 using Microsoft.AspNetCore.DataProtection;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
+using Moq;
+using System.Collections.Generic;
+using System.Security.Claims;
+using Xunit;
 
 namespace AspNetCore.Mvc.CookieTempData.Tests
 {
@@ -13,6 +13,7 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
     {
         private readonly Mock<IDataProtectionProvider> _dataProtectionProviderMock;
         private readonly Mock<IDataProtector> _dataProtectorMock;
+        private readonly Mock<IBsonSerializer> _serializerMock;
 
         public CookieTempDataProviderTests()
         {
@@ -26,6 +27,8 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
             _dataProtectorMock
                 .Setup(p => p.CreateProtector(It.IsAny<string>()))
                 .Returns(_dataProtectorMock.Object);
+
+            _serializerMock = new Mock<IBsonSerializer>(MockBehavior.Strict);
         }
 
         private HttpContext CreateHttpContext(bool https = false, Dictionary<string, string> headers = null)
@@ -52,7 +55,7 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
         {
             var context = CreateHttpContext();
 
-            var sut = new CookieTempDataProvider(_dataProtectionProviderMock.Object);
+            var sut = new CookieTempDataProvider(_serializerMock.Object, _dataProtectionProviderMock.Object);
             var values = sut.LoadTempData(context);
 
             Assert.Null(values);

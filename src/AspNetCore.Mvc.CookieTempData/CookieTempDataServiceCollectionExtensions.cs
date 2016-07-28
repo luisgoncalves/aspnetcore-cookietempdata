@@ -1,4 +1,5 @@
 ﻿using AspNetCore.Mvc.CookieTempData;
+using AspNetCore.Mvc.CookieTempData.Serialization;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
@@ -22,6 +23,8 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(services));
             }
+
+            services.AddSingleton<IBsonSerializer, BsonSerializer>();
 
             /* MVC uses services.TryAddXXX to register theses services, so we can use Replace even if being configured before */
 
