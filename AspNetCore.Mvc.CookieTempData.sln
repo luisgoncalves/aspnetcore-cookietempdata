@@ -11,6 +11,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AspNetCore.Mvc.CookieTempDa
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{51FED1B7-C6B4-46D0-9D3D-67B8B3242281}"
 	ProjectSection(SolutionItems) = preProject
+		build.cake = build.cake
 		global.json = global.json
 	EndProjectSection
 EndProject
