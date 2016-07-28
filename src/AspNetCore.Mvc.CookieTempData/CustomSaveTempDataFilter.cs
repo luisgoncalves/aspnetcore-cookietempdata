@@ -41,12 +41,12 @@ namespace AspNetCore.Mvc.CookieTempData
 
         void IResultFilter.OnResultExecuted(ResultExecutedContext context)
         {
-            // MVC's implementation "keeps" temp here. Do NOT call into the base class.
+            // MVC's implementation "keeps" temp data here. Do NOT call into the base class.
         }
 
         void IResourceFilter.OnResourceExecuted(ResourceExecutedContext context)
         {
-            // MVC's implementation "saves" temp here. Do NOT call into the base class.
+            // MVC's implementation "saves" temp data here. Do NOT call into the base class.
         }
     }
 }
