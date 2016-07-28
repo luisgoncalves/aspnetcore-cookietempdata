@@ -52,6 +52,13 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
             _requestMock.SetupGet(r => r.Cookies).Returns(new RequestCookieCollection(cookies ?? new Dictionary<string, string>(0)));
         }
 
+        private void SetupDeleteResponseCookieVerifiable(bool https = false)
+        {
+            _responseCookiesMock
+                .Setup(c => c.Delete("tmp", It.Is<CookieOptions>(o => o.Secure == https && o.HttpOnly == true && o.Path == "/")))
+                .Verifiable();
+        }
+
         [Fact]
         public void Load_Without_Cookie_Returns_Null()
         {
@@ -71,10 +78,7 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
                 { "tmp", "ZZZXXXCCC" }
             };
             SetupRequestMock(cookies: cookies);
-
-            _responseCookiesMock
-                .Setup(c => c.Delete("tmp", It.IsAny<CookieOptions>()))
-                .Verifiable();
+            SetupDeleteResponseCookieVerifiable();
 
             var sut = new CookieTempDataProvider(_serializerMock.Object, _dataProtectionProviderMock.Object);
             var values = sut.LoadTempData(_contextMock.Object);
@@ -100,9 +104,7 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
                 .Throws<CryptographicException>()
                 .Verifiable();
 
-            _responseCookiesMock
-                .Setup(c => c.Delete("tmp", It.IsAny<CookieOptions>()))
-                .Verifiable();
+            SetupDeleteResponseCookieVerifiable();
 
             var sut = new CookieTempDataProvider(_serializerMock.Object, _dataProtectionProviderMock.Object);
             var values = sut.LoadTempData(_contextMock.Object);
@@ -143,6 +145,66 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
             Assert.Equal(1, values.Count);
             Assert.True(values.ContainsKey("mykey"));
             Assert.Equal("myvalue", values["mykey"]);
+        }
+
+        [Fact]
+        public void Save_Without_Values_And_Without_Cookie_Does_Nothing()
+        {
+            SetupRequestMock();
+
+            var sut = new CookieTempDataProvider(_serializerMock.Object, _dataProtectionProviderMock.Object);
+            sut.SaveTempData(_contextMock.Object, new Dictionary<string, object>(0));
+        }
+
+        [InlineData(true)]
+        [InlineData(false)]
+        [Theory]
+        public void Save_Without_Values_But_With_Cookie_Removes_Cookie(bool https)
+        {
+            var cookies = new Dictionary<string, string>
+            {
+                { "tmp", "Zm9vNDI=" /* valid base 64 */ }
+            };
+            SetupRequestMock(cookies: cookies, https: https);
+            SetupDeleteResponseCookieVerifiable(https);
+
+            var sut = new CookieTempDataProvider(_serializerMock.Object, _dataProtectionProviderMock.Object);
+            sut.SaveTempData(_contextMock.Object, new Dictionary<string, object>(0));
+
+            _responseCookiesMock.Verify();
+        }
+
+        [InlineData(true)]
+        [InlineData(false)]
+        [Theory]
+        public void Save_With_Values_Sets_Cookie(bool https)
+        {
+            SetupRequestMock(https);
+
+            var values = new Dictionary<string, object>
+            {
+                { "mykey", "myvalue" }
+            };
+            var markerBytes = new byte[0];
+
+            _serializerMock
+                .Setup(s => s.Serialize(values))
+                .Returns(markerBytes);
+
+            _dataProtectorMock
+                .Setup(p => p.Protect(markerBytes))
+                .Returns(markerBytes)
+                .Verifiable();
+
+            _responseCookiesMock
+                .Setup(c => c.Append("tmp", It.IsAny<string>(), It.Is<CookieOptions>(o => o.Secure == https && o.HttpOnly == true && o.Path == "/")))
+                .Verifiable();
+
+            var sut = new CookieTempDataProvider(_serializerMock.Object, _dataProtectionProviderMock.Object);
+            sut.SaveTempData(_contextMock.Object, values);
+
+            _dataProtectorMock.Verify();
+            _responseCookiesMock.Verify();
         }
     }
 }
