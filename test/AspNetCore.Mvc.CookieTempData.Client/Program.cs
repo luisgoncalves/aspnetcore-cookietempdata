@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 
 namespace AspNetCore.Mvc.CookieTempDataProvider.Client
 {
@@ -13,6 +8,7 @@ namespace AspNetCore.Mvc.CookieTempDataProvider.Client
         {
             var host = new WebHostBuilder()
                 .UseKestrel()
+                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 
