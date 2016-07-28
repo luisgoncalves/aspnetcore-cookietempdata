@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace AspNetCore.Mvc.CookieTempData
 {
@@ -30,7 +31,7 @@ namespace AspNetCore.Mvc.CookieTempData
 
             _cookieName = "tmp";
             _serializer = serializer;
-            _baseProtector = dataProtectionProvider.CreateProtector(typeof(CookieTempDataProvider).FullName, "v1");
+            _baseProtector = dataProtectionProvider.CreateProtector(typeof(CookieTempDataProvider).FullName);
         }
 
         private static CookieOptions CookieOptionsFor(HttpContext context) => new CookieOptions
@@ -56,15 +57,23 @@ namespace AspNetCore.Mvc.CookieTempData
             {
                 if (!string.IsNullOrWhiteSpace(cookieValue))
                 {
-                    var bytes = Convert.FromBase64String(cookieValue);
-                    bytes = DataProtectorFor(context).Unprotect(bytes);
-                    return _serializer.Deserialize<IDictionary<string, object>>(bytes);
+                    try
+                    {
+                        var bytes = Convert.FromBase64String(cookieValue);
+                        bytes = DataProtectorFor(context).Unprotect(bytes);
+                        return _serializer.Deserialize<IDictionary<string, object>>(bytes);
+                    }
+                    catch (FormatException)
+                    {
+                        // Invalid base 64 string. Fall through.
+                    }
+                    catch (CryptographicException)
+                    {
+                        // Invalid protected payload. Fall through.
+                    }
                 }
-                else
-                {
-                    context.Response.Cookies.Delete(_cookieName, CookieOptionsFor(context));
-                    // TODO also do this on deserialization failures (base64, data protection)
-                }
+
+                context.Response.Cookies.Delete(_cookieName, CookieOptionsFor(context));
             }
 
             return null;

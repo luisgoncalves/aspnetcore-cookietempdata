@@ -11,7 +11,7 @@ namespace AspNetCore.Mvc.CookieTempData
     /// we cannot use <see cref="IResultFilter.OnResultExecuted(ResultExecutedContext)"/> to modify temp data, because it has already
     /// been saved.
     /// This class must extend <see cref="Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.SaveTempDataFilter"/> because that filter is
-    /// obtained directly from the DI container by MCV. We use explicit interface implementation to be able to intercept the methods.
+    /// obtained directly from the DI container by MVC. We use explicit interface implementation to be able to intercept the methods.
     /// </summary>
     internal sealed class CustomSaveTempDataFilter : Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.SaveTempDataFilter, IResourceFilter, IResultFilter
     {
