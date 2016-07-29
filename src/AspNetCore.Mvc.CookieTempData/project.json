@@ -1,8 +1,23 @@
 ﻿{
-  "version": "1.0.0",
+  "version": "1.0.0-*",
+  "description": "Cookie-based TempData provider for ASP.NET Core MVC",
+  "authors": [ "Luís Gonçalves" ],
 
   "buildOptions": {
     "warningsAsErrors": true
+  },
+
+  "packOptions": {
+    "tags": [
+      "aspnetcore",
+      "aspnetcoremvc",
+      "tempdata"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/luisgoncalves/aspnetcore-cookietempdata.git"
+    },
+    "projectUrl": "https://github.com/luisgoncalves/aspnetcore-cookietempdata"
   },
 
   "dependencies": {
