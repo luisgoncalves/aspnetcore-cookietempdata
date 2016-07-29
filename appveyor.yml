@@ -1,7 +1,14 @@
 version: 1.0.0-{branch}.{build}
+
 branches:
   only:
   - dev
+
 build_script:
 - ps: .\build.ps1 -Target Test
+
 test: off
+
+cache:
+- '%USERPROFILE%\.nuget\packages -> **\project.json'  # project.json NuGet cache
+- tools -> build.cake, tools\packages.config # Cake tools
