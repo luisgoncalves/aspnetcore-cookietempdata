@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Moq;
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -23,14 +24,9 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
         {
             _dataProtectionProviderMock = new Mock<IDataProtectionProvider>(MockBehavior.Strict);
             _dataProtectorMock = new Mock<IDataProtector>(MockBehavior.Strict);
-            // Initial creation
             _dataProtectionProviderMock
                 .Setup(p => p.CreateProtector(It.IsAny<string>()))
                 .Returns(_dataProtectorMock.Object);
-            // Nested creation
-            //_dataProtectorMock
-            //    .Setup(p => p.CreateProtector(It.IsAny<string>()))
-            //    .Returns(_dataProtectorMock.Object);
 
             _serializerMock = new Mock<IBsonSerializer>(MockBehavior.Strict);
 
@@ -41,14 +37,19 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
 
             _contextMock.SetupGet(c => c.Request).Returns(_requestMock.Object);
             _contextMock.SetupGet(c => c.Response).Returns(responseMock.Object);
-            _contextMock.SetupGet(c => c.User).Returns(new ClaimsPrincipal(new ClaimsIdentity()));
-            _requestMock.SetupGet(r => r.PathBase);
             responseMock.SetupGet(r => r.Cookies).Returns(_responseCookiesMock.Object);
         }
 
-        private void SetupRequestMock(bool https = false, Dictionary<string, string> cookies = null)
+        private void SetupRequestMock(bool https = false, Dictionary<string, string> cookies = null, bool authenticatedUser = false, string basePath = null)
         {
+            var identity = authenticatedUser
+                ? new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, Guid.NewGuid().ToString()) }, nameof(CookieTempDataProviderTests))
+                : new ClaimsIdentity();
+
+            _contextMock.SetupGet(c => c.User).Returns(new ClaimsPrincipal(identity));
+
             _requestMock.SetupGet(r => r.IsHttps).Returns(https);
+            _requestMock.SetupGet(r => r.PathBase).Returns(basePath != null ? new PathString(basePath) : new PathString());
             _requestMock.SetupGet(r => r.Cookies).Returns(new RequestCookieCollection(cookies ?? new Dictionary<string, string>(0)));
         }
 
@@ -163,7 +164,7 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
         {
             var cookies = new Dictionary<string, string>
             {
-                { "tmp", "Zm9vNDI=" /* valid base 64 */ }
+                { "tmp", "X" }
             };
             SetupRequestMock(cookies: cookies, https: https);
             SetupDeleteResponseCookieVerifiable(https);
@@ -174,13 +175,33 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
             _responseCookiesMock.Verify();
         }
 
-        [InlineData(true)]
-        [InlineData(false)]
+        [InlineData(true, null)]
+        [InlineData(true, "/vdir")]
+        [InlineData(false, null)]
+        [InlineData(false, "/vdir/app")]
         [Theory]
-        public void Save_With_Values_Sets_Cookie(bool https)
+        public void Save_With_Values_Sets_Cookie_With_Correct_Properties(bool https, string basePath)
         {
-            SetupRequestMock(https);
+            SetupRequestMock(https: https, basePath: basePath);
+            TestSuccessfulSave(https, basePath);
+        }
 
+        [Fact]
+        public void Save_Creates_Specific_Data_Protector_If_User_Is_Authenticated()
+        {
+            SetupRequestMock(authenticatedUser: true);
+
+            var currentUsername = _contextMock.Object.User.Identity.Name;
+            _dataProtectorMock
+                .Setup(p => p.CreateProtector(currentUsername))
+                .Returns(_dataProtectorMock.Object)
+                .Verifiable();
+
+            TestSuccessfulSave();
+        }
+
+        private void TestSuccessfulSave(bool expectedCookieSecure = false, string expectedCookiePath = null)
+        {
             var values = new Dictionary<string, object>
             {
                 { "mykey", "myvalue" }
@@ -197,7 +218,10 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
                 .Verifiable();
 
             _responseCookiesMock
-                .Setup(c => c.Append("tmp", It.IsAny<string>(), It.Is<CookieOptions>(o => o.Secure == https && o.HttpOnly == true && o.Path == "/")))
+                .Setup(c => c.Append("tmp", It.IsAny<string>(), It.Is<CookieOptions>(o => 
+                    o.Secure == expectedCookieSecure &&
+                    o.HttpOnly == true &&
+                    o.Path == (expectedCookiePath ?? "/"))))
                 .Verifiable();
 
             var sut = new CookieTempDataProvider(_serializerMock.Object, _dataProtectionProviderMock.Object);
