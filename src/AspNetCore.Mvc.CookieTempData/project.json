@@ -7,8 +7,9 @@
 
   "dependencies": {
     "NETStandard.Library": "1.6.0",
-    "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.0"
-    //"Newtonsoft.Json": "9.0.1"
+    "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.0",
+    "Microsoft.AspNetCore.DataProtection": "1.0.0",
+    "Newtonsoft.Json": "9.0.1"
   },
 
   "frameworks": {
