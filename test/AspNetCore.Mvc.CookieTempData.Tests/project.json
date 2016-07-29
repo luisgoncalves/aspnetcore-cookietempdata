@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "xunit": "2.1.0",
-    "dotnet-test-xunit": "1.0.0-rc2-192208-24",
+    "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Moq": "4.6.25-*",
     "AspNetCore.Mvc.CookieTempData": { "target": "project" }
   },
