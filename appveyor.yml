@@ -1,4 +1,4 @@
-version: 1.0.0-{branch}{build}
+version: 1.0.0-{branch}.{build}
 branches:
   only:
   - dev
