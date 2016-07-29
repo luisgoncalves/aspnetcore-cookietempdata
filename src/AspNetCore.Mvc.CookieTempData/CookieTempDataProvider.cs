@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -17,8 +18,13 @@ namespace AspNetCore.Mvc.CookieTempData
         private readonly IBsonSerializer _serializer;
         private readonly IDataProtector _baseProtector;
 
-        public CookieTempDataProvider(IBsonSerializer serializer, IDataProtectionProvider dataProtectionProvider)
+        public CookieTempDataProvider(IOptions<CookieTempDataOptions> optionsAccessor, IBsonSerializer serializer, IDataProtectionProvider dataProtectionProvider)
         {
+            if (optionsAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(optionsAccessor));
+            }
+
             if (serializer == null)
             {
                 throw new ArgumentNullException(nameof(serializer));
@@ -29,7 +35,9 @@ namespace AspNetCore.Mvc.CookieTempData
                 throw new ArgumentNullException(nameof(dataProtectionProvider));
             }
 
-            _cookieName = "tmp";
+            var options = optionsAccessor.Value;
+
+            _cookieName = options.CookieName;
             _serializer = serializer;
             _baseProtector = dataProtectionProvider.CreateProtector(typeof(CookieTempDataProvider).FullName);
         }

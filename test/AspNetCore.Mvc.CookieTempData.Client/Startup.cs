@@ -9,8 +9,11 @@ namespace AspNetCore.Mvc.CookieTempDataProvider.Client
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCookieTempData();
             services.AddMvc();
+            services.AddCookieTempData(o => 
+            {
+                o.CookieName = "t";
+            });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)

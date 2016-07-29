@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.Extensions.Options;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,8 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
 {
     public class CookieTempDataProviderTests
     {
+        private readonly CookieTempDataOptions _options;
+        private readonly Mock<IOptions<CookieTempDataOptions>> _optionsMock;
         private readonly Mock<IDataProtectionProvider> _dataProtectionProviderMock;
         private readonly Mock<IDataProtector> _dataProtectorMock;
         private readonly Mock<IBsonSerializer> _serializerMock;
@@ -22,6 +25,10 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
 
         public CookieTempDataProviderTests()
         {
+            _options = new CookieTempDataOptions();
+            _optionsMock = new Mock<IOptions<CookieTempDataOptions>>();
+            _optionsMock.SetupGet(o => o.Value).Returns(_options);
+
             _dataProtectionProviderMock = new Mock<IDataProtectionProvider>(MockBehavior.Strict);
             _dataProtectorMock = new Mock<IDataProtector>(MockBehavior.Strict);
             _dataProtectionProviderMock
@@ -56,16 +63,18 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
         private void SetupDeleteResponseCookieVerifiable(bool https = false)
         {
             _responseCookiesMock
-                .Setup(c => c.Delete("tmp", It.Is<CookieOptions>(o => o.Secure == https && o.HttpOnly == true && o.Path == "/")))
+                .Setup(c => c.Delete(_options.CookieName, It.Is<CookieOptions>(o => o.Secure == https && o.HttpOnly == true && o.Path == "/")))
                 .Verifiable();
         }
+
+        private CookieTempDataProvider CreateCookieTempDataProvider() => new CookieTempDataProvider(_optionsMock.Object, _serializerMock.Object, _dataProtectionProviderMock.Object);
 
         [Fact]
         public void Load_Without_Cookie_Returns_Null()
         {
             SetupRequestMock();
 
-            var sut = new CookieTempDataProvider(_serializerMock.Object, _dataProtectionProviderMock.Object);
+            var sut = CreateCookieTempDataProvider();
             var values = sut.LoadTempData(_contextMock.Object);
 
             Assert.Null(values);
@@ -76,12 +85,12 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
         {
             var cookies = new Dictionary<string, string>
             {
-                { "tmp", "ZZZXXXCCC" }
+                { _options.CookieName, "ZZZXXXCCC" }
             };
             SetupRequestMock(cookies: cookies);
             SetupDeleteResponseCookieVerifiable();
 
-            var sut = new CookieTempDataProvider(_serializerMock.Object, _dataProtectionProviderMock.Object);
+            var sut = CreateCookieTempDataProvider();
             var values = sut.LoadTempData(_contextMock.Object);
 
             Assert.Null(values);
@@ -96,7 +105,7 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
 
             var cookies = new Dictionary<string, string>
             {
-                { "tmp", "Zm9vNDI=" /* valid base 64 */ }
+                { _options.CookieName, "Zm9vNDI=" /* valid base 64 */ }
             };
             SetupRequestMock(cookies: cookies);
 
@@ -107,7 +116,7 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
 
             SetupDeleteResponseCookieVerifiable();
 
-            var sut = new CookieTempDataProvider(_serializerMock.Object, _dataProtectionProviderMock.Object);
+            var sut = CreateCookieTempDataProvider();
             var values = sut.LoadTempData(_contextMock.Object);
 
             Assert.Null(values);
@@ -121,7 +130,7 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
         {
             var cookies = new Dictionary<string, string>
             {
-                { "tmp", "Zm9vNDI=" /* valid base 64 */ }
+                { _options.CookieName, "Zm9vNDI=" /* valid base 64 */ }
             };
             SetupRequestMock(cookies: cookies);
 
@@ -139,7 +148,7 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
                 .Setup(s => s.Deserialize<IDictionary<string, object>>(markerBytes))
                 .Returns(markerValues);
 
-            var sut = new CookieTempDataProvider(_serializerMock.Object, _dataProtectionProviderMock.Object);
+            var sut = CreateCookieTempDataProvider();
             var values = sut.LoadTempData(_contextMock.Object);
 
             Assert.Same(markerValues, values);
@@ -153,7 +162,7 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
         {
             SetupRequestMock();
 
-            var sut = new CookieTempDataProvider(_serializerMock.Object, _dataProtectionProviderMock.Object);
+            var sut = CreateCookieTempDataProvider();
             sut.SaveTempData(_contextMock.Object, new Dictionary<string, object>(0));
         }
 
@@ -164,12 +173,12 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
         {
             var cookies = new Dictionary<string, string>
             {
-                { "tmp", "X" }
+                { _options.CookieName, "X" }
             };
             SetupRequestMock(cookies: cookies, https: https);
             SetupDeleteResponseCookieVerifiable(https);
 
-            var sut = new CookieTempDataProvider(_serializerMock.Object, _dataProtectionProviderMock.Object);
+            var sut = CreateCookieTempDataProvider();
             sut.SaveTempData(_contextMock.Object, new Dictionary<string, object>(0));
 
             _responseCookiesMock.Verify();
@@ -218,13 +227,13 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
                 .Verifiable();
 
             _responseCookiesMock
-                .Setup(c => c.Append("tmp", It.IsAny<string>(), It.Is<CookieOptions>(o => 
+                .Setup(c => c.Append(_options.CookieName, It.IsAny<string>(), It.Is<CookieOptions>(o =>
                     o.Secure == expectedCookieSecure &&
                     o.HttpOnly == true &&
                     o.Path == (expectedCookiePath ?? "/"))))
                 .Verifiable();
 
-            var sut = new CookieTempDataProvider(_serializerMock.Object, _dataProtectionProviderMock.Object);
+            var sut = CreateCookieTempDataProvider();
             sut.SaveTempData(_contextMock.Object, values);
 
             _dataProtectorMock.Verify();

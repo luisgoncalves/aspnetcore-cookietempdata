@@ -17,11 +17,19 @@ namespace Microsoft.Extensions.DependencyInjection
         /// should be invoked after adding MVC services to the <see cref="IServiceCollection" />.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-        public static void AddCookieTempData(this IServiceCollection services)
+        /// <param name="setupAction">Configuration of <see cref="CookieTempDataOptions"/>.</param>
+        public static void AddCookieTempData(this IServiceCollection services, Action<CookieTempDataOptions> setupAction = null)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
+            }
+
+            services.AddOptions();
+
+            if (setupAction != null)
+            {
+                services.Configure(setupAction);
             }
 
             services.AddSingleton<IBsonSerializer, BsonSerializer>();
