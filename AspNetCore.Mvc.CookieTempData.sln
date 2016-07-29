@@ -14,6 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		appveyor.yml = appveyor.yml
 		build.cake = build.cake
 		global.json = global.json
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AspNetCore.Mvc.CookieTempData.Tests", "test\AspNetCore.Mvc.CookieTempData.Tests\AspNetCore.Mvc.CookieTempData.Tests.xproj", "{2CEB5475-408E-4285-8B79-9963FCEEB5E2}"
