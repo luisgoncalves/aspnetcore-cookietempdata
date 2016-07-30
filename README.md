@@ -1,7 +1,8 @@
 # AspNetCore.Mvc.CookieTempData
 
-[![Build status](https://ci.appveyor.com/api/projects/status/ja28in082k1vll61/branch/dev?svg=true)](https://ci.appveyor.com/project/luisgoncalves/aspnetcore-cookietempdata/branch/dev)
- [![NuGet](https://img.shields.io/nuget/v/AspNetCore.Mvc.CookieTempData.svg?maxAge=2592000)](https://www.nuget.org/packages/AspNetCore.Mvc.CookieTempData)
+[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/ja28in082k1vll61/branch/dev?svg=true)](https://ci.appveyor.com/project/luisgoncalves/aspnetcore-cookietempdata/branch/dev)
+[![Travis CI build status](https://travis-ci.org/luisgoncalves/aspnetcore-cookietempdata.svg?branch=dev)](https://travis-ci.org/luisgoncalves/aspnetcore-cookietempdata)
+[![NuGet](https://img.shields.io/nuget/v/AspNetCore.Mvc.CookieTempData.svg?maxAge=2592000)](https://www.nuget.org/packages/AspNetCore.Mvc.CookieTempData)
 
 Cookie-based *TempData* provider for ASP.NET Core MVC applications. *TempData* values are serialized in BSON and protected via the [data protection API](https://docs.asp.net/en/latest/security/data-protection/index.html).
 
