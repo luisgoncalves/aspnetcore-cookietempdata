@@ -5,23 +5,44 @@ namespace AspNetCore.Mvc.CookieTempData.Client
 {
     public class HomeController : Controller
     {
+        private const string Key = "mykey";
+
+        public class State
+        {
+            public class NestedState
+            {
+                public long Long { get; set; }
+                public string String { get; set; }
+            }
+
+            public DateTime Date { get; set; }
+            public NestedState Nested { get; set; }
+        }
+
         public IActionResult Index()
         {
-            TempData["mykey"] = DateTime.UtcNow;
-            return Content($"<html><body><a href='{Url.Action("Continue")}'>Click me</a></body></html>", "text/html");
+            var now = DateTime.UtcNow;
+            TempData[Key] = new State
+            {
+                Date = now,
+                Nested = new State.NestedState
+                {
+                    Long = now.Ticks,
+                    String = now.ToString("o"),
+                }
+            };
+            return Content($"<html><body><a href='{Url.Action("Continue")}'>Get value from TempData</a></body></html>", "text/html");
         }
 
         public IActionResult Continue()
         {
-            DateTime value;
-            if (TempData.TryGetValue("mykey", out value))
+            State value;
+            if (TempData.TryGetValue(Key, out value))
             {
-                return Content("TempData has value " + value);
+                return Content($"TempData has values {value.Date}, {value.Nested.Long}, {value.Nested.String}");
             }
-            else
-            {
-                return Content("Nothing on TempData");
-            }
+
+            return Content("Nothing on TempData");
         }
     }
 }
