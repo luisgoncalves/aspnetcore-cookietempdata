@@ -1,8 +1,9 @@
-version: 1.0.0-{branch}.{build}
+version: {branch}.build.{build}
 
 branches:
   only:
   - dev
+  - master
 
 build_script:
 - ps: .\build.ps1 -Target Test

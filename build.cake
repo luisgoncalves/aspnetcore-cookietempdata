@@ -1,8 +1,16 @@
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
+var versionSuffix = Argument("versionSuffix", (string)null);
+
+Task("Clean")
+  .Does(() => 
+  {
+    CleanDirectory("./artifacts");
+  });
 
 Task("Build")
-  .Does(() => 
+  .IsDependentOn("Clean")
+  .Does(() =>
   {
     DotNetCoreRestore();
     DotNetCoreBuild("./*/*/project.json", new DotNetCoreBuildSettings
@@ -31,6 +39,8 @@ Task("Package")
     {
       NoBuild = true,
       Configuration = configuration,
+      VersionSuffix = versionSuffix,
+      OutputDirectory = "./artifacts",
     });
   });
 
