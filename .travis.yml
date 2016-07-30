@@ -1,9 +1,9 @@
 language: csharp
 
-# branches:
-#   only:
-#   - dev
-#   - master
+branches:
+  only:
+  - dev
+  - master
 
 os:
   - linux
