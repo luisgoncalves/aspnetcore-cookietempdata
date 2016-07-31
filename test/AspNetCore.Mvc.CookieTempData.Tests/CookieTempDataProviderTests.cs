@@ -122,6 +122,7 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
             Assert.Null(values);
             // An attempt to unprotect must have been made
             _dataProtectorMock.Verify();
+            // Cookie must have been removed
             _responseCookiesMock.Verify();
         }
 
@@ -181,6 +182,7 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
             var sut = CreateCookieTempDataProvider();
             sut.SaveTempData(_contextMock.Object, new Dictionary<string, object>(0));
 
+            // Cookie must have been removed
             _responseCookiesMock.Verify();
         }
 
@@ -236,7 +238,9 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
             var sut = CreateCookieTempDataProvider();
             sut.SaveTempData(_contextMock.Object, values);
 
+            // Protect must have been invoked
             _dataProtectorMock.Verify();
+            // Cookie must have been set
             _responseCookiesMock.Verify();
         }
     }

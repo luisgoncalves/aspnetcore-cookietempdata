@@ -4,6 +4,9 @@ using System.IO;
 
 namespace AspNetCore.Mvc.CookieTempData.Serialization
 {
+    /// <summary>
+    /// An <see cref="IBsonSerializer"/> based on JSON.NET.
+    /// </summary>
     public class BsonSerializer : IBsonSerializer
     {
         private readonly JsonSerializer _serializer;
