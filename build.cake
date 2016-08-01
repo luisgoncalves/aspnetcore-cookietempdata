@@ -24,6 +24,13 @@ Task("Test")
   .Does(() => 
   {
     var testSettings = new DotNetCoreTestSettings { NoBuild = true, Configuration = configuration };
+
+    // Couldn't get 'dotnet-test-xunit' to run on .NET 4.5.1 on Ubuntu 
+    if(IsRunningOnUnix())
+    {
+      testSettings.Framework = "netcoreapp1.0";
+    }
+
     var testProjects = GetFiles("./test/*.Tests/project.json"); 
     foreach(var p in testProjects){
       DotNetCoreTest(p.ToString(), testSettings);

@@ -35,7 +35,7 @@ namespace AspNetCore.Mvc.CookieTempData
             context.HttpContext.Response.OnStarting(() =>
             {
                 tempDataDictionary.Save();
-                return Task.CompletedTask;
+                return Task.FromResult<object>(null);
             });
         }
 
