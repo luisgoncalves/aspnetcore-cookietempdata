@@ -1,13 +1,21 @@
 {
   "version": "1.0.0-*",
   "buildOptions": {
-    "debugType": "portable"
+    "debugType": "portable",
+    "additionalArguments": [
+      "/ruleset:../Tests.ruleset",
+      "/additionalfile:../stylecop.json"
+    ]
   },
   "dependencies": {
     "xunit": "2.2.0-beta2-build3300",
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Moq": "4.6.25-*",
-    "AspNetCore.Mvc.CookieTempData": { "target": "project" }
+    "AspNetCore.Mvc.CookieTempData": { "target": "project" },
+    "StyleCop.Analyzers": {
+      "version": "1.0.0",
+      "type": "build"
+    }
   },
   "testRunner": "xunit",
   "frameworks": {

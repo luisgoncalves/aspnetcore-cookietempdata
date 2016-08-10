@@ -36,9 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             /* MVC uses services.TryAddXXX to register theses services, so we can use Replace even if being configured before */
 
-            // We need to replace built in filter for saving temp data. See the notes on CustomSaveTempDataFilter.
             services.Replace(ServiceDescriptor.Singleton<BuiltInSaveTempDataFilter, CustomSaveTempDataFilter>());
-            // Replace whatever provider is configured with ours.
             services.Replace(ServiceDescriptor.Singleton<ITempDataProvider, CookieTempDataProvider>());
         }
     }

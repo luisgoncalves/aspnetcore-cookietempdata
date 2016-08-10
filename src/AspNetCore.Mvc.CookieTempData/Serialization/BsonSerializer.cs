@@ -11,16 +11,20 @@ namespace AspNetCore.Mvc.CookieTempData.Serialization
     {
         private readonly JsonSerializer _serializer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BsonSerializer"/> class.
+        /// </summary>
         public BsonSerializer()
         {
             _serializer = new JsonSerializer
             {
                 Formatting = Formatting.None,
                 NullValueHandling = NullValueHandling.Ignore,
-                TypeNameHandling = TypeNameHandling.Auto,
+                TypeNameHandling = TypeNameHandling.Auto
             };
         }
 
+        /// <inheritdoc />
         public byte[] Serialize(object obj)
         {
             using (var ms = new MemoryStream())
@@ -29,10 +33,12 @@ namespace AspNetCore.Mvc.CookieTempData.Serialization
                 {
                     _serializer.Serialize(writer, obj);
                 }
+
                 return ms.ToArray();
             }
         }
 
+        /// <inheritdoc />
         public T Deserialize<T>(byte[] bytes)
         {
             using (var ms = new MemoryStream(bytes))

@@ -18,6 +18,12 @@ namespace AspNetCore.Mvc.CookieTempData
         private readonly IBsonSerializer _serializer;
         private readonly IDataProtector _baseProtector;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CookieTempDataProvider"/> class.
+        /// </summary>
+        /// <param name="optionsAccessor">The configuration options</param>
+        /// <param name="serializer">The BSON serializer used to serialize the temporary data</param>
+        /// <param name="dataProtectionProvider">The <see cref="IDataProtectionProvider"/> used to obtain a <see cref="IDataProtector"/> to protect cookie contents</param>
         public CookieTempDataProvider(IOptions<CookieTempDataOptions> optionsAccessor, IBsonSerializer serializer, IDataProtectionProvider dataProtectionProvider)
         {
             if (optionsAccessor == null)
@@ -42,17 +48,7 @@ namespace AspNetCore.Mvc.CookieTempData
             _baseProtector = dataProtectionProvider.CreateProtector(typeof(CookieTempDataProvider).FullName);
         }
 
-        private static CookieOptions CookieOptionsFor(HttpContext context) => new CookieOptions
-        {
-            HttpOnly = true,
-            Path = context.Request.PathBase.HasValue ? context.Request.PathBase.ToString() : "/",
-            Secure = context.Request.IsHttps,
-        };
-
-        private IDataProtector DataProtectorFor(HttpContext context) => context.User.Identity.IsAuthenticated
-            ? _baseProtector.CreateProtector(context.User.Identity.Name)
-            : _baseProtector;
-
+        /// <inheritdoc />
         public IDictionary<string, object> LoadTempData(HttpContext context)
         {
             if (context == null)
@@ -87,6 +83,7 @@ namespace AspNetCore.Mvc.CookieTempData
             return null;
         }
 
+        /// <inheritdoc />
         public void SaveTempData(HttpContext context, IDictionary<string, object> values)
         {
             if (context == null)
@@ -106,5 +103,16 @@ namespace AspNetCore.Mvc.CookieTempData
                 context.Response.Cookies.Delete(_cookieName, CookieOptionsFor(context));
             }
         }
+
+        private static CookieOptions CookieOptionsFor(HttpContext context) => new CookieOptions
+        {
+            HttpOnly = true,
+            Path = context.Request.PathBase.HasValue ? context.Request.PathBase.ToString() : "/",
+            Secure = context.Request.IsHttps
+        };
+
+        private IDataProtector DataProtectorFor(HttpContext context) => context.User.Identity.IsAuthenticated
+            ? _baseProtector.CreateProtector(context.User.Identity.Name)
+            : _baseProtector;
     }
 }

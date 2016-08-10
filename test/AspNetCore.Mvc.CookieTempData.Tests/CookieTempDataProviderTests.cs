@@ -47,28 +47,6 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
             responseMock.SetupGet(r => r.Cookies).Returns(_responseCookiesMock.Object);
         }
 
-        private void SetupRequestMock(bool https = false, Dictionary<string, string> cookies = null, bool authenticatedUser = false, string basePath = null)
-        {
-            var identity = authenticatedUser
-                ? new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, Guid.NewGuid().ToString()) }, nameof(CookieTempDataProviderTests))
-                : new ClaimsIdentity();
-
-            _contextMock.SetupGet(c => c.User).Returns(new ClaimsPrincipal(identity));
-
-            _requestMock.SetupGet(r => r.IsHttps).Returns(https);
-            _requestMock.SetupGet(r => r.PathBase).Returns(basePath != null ? new PathString(basePath) : new PathString());
-            _requestMock.SetupGet(r => r.Cookies).Returns(new RequestCookieCollection(cookies ?? new Dictionary<string, string>(0)));
-        }
-
-        private void SetupDeleteResponseCookieVerifiable(bool https = false)
-        {
-            _responseCookiesMock
-                .Setup(c => c.Delete(_options.CookieName, It.Is<CookieOptions>(o => o.Secure == https && o.HttpOnly == true && o.Path == "/")))
-                .Verifiable();
-        }
-
-        private CookieTempDataProvider CreateCookieTempDataProvider() => new CookieTempDataProvider(_optionsMock.Object, _serializerMock.Object, _dataProtectionProviderMock.Object);
-
         [Fact]
         public void Load_Without_Cookie_Returns_Null()
         {
@@ -97,12 +75,13 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
             _responseCookiesMock.Verify();
         }
 
+        /// <remarks>
+        /// This test also covers different users (different data protection purposes) because the same
+        /// exception is used by data protection APIs.
+        /// </remarks>
         [Fact]
         public void Load_With_Tampered_Cookie_Returns_Null_And_Removes_Cookie()
         {
-            // This test also covers different users (different data protection purposes) because
-            // the same exception is used by data protection APIs.
-
             var cookies = new Dictionary<string, string>
             {
                 { _options.CookieName, "Zm9vNDI=" /* valid base 64 */ }
@@ -243,5 +222,27 @@ namespace AspNetCore.Mvc.CookieTempData.Tests
             // Cookie must have been set
             _responseCookiesMock.Verify();
         }
+
+        private void SetupRequestMock(bool https = false, Dictionary<string, string> cookies = null, bool authenticatedUser = false, string basePath = null)
+        {
+            var identity = authenticatedUser
+                ? new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, Guid.NewGuid().ToString()) }, nameof(CookieTempDataProviderTests))
+                : new ClaimsIdentity();
+
+            _contextMock.SetupGet(c => c.User).Returns(new ClaimsPrincipal(identity));
+
+            _requestMock.SetupGet(r => r.IsHttps).Returns(https);
+            _requestMock.SetupGet(r => r.PathBase).Returns(basePath != null ? new PathString(basePath) : default(PathString));
+            _requestMock.SetupGet(r => r.Cookies).Returns(new RequestCookieCollection(cookies ?? new Dictionary<string, string>(0)));
+        }
+
+        private void SetupDeleteResponseCookieVerifiable(bool https = false)
+        {
+            _responseCookiesMock
+                .Setup(c => c.Delete(_options.CookieName, It.Is<CookieOptions>(o => o.Secure == https && o.HttpOnly == true && o.Path == "/")))
+                .Verifiable();
+        }
+
+        private CookieTempDataProvider CreateCookieTempDataProvider() => new CookieTempDataProvider(_optionsMock.Object, _serializerMock.Object, _dataProtectionProviderMock.Object);
     }
 }

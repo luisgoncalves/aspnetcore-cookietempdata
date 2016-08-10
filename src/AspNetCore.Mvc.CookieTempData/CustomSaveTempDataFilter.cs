@@ -17,7 +17,8 @@ namespace AspNetCore.Mvc.CookieTempData
     {
         private readonly ITempDataDictionaryFactory _factory;
 
-        public CustomSaveTempDataFilter(ITempDataDictionaryFactory factory) : base(factory)
+        public CustomSaveTempDataFilter(ITempDataDictionaryFactory factory)
+            : base(factory)
         {
             _factory = factory;
         }

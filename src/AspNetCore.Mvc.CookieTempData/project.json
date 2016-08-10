@@ -4,7 +4,12 @@
   "authors": [ "Luís Gonçalves" ],
 
   "buildOptions": {
-    "warningsAsErrors": true
+    "xmlDoc": true,
+    "warningsAsErrors": true,
+    "additionalArguments": [
+      "/ruleset:../Main.ruleset",
+      "/additionalfile:../stylecop.json"
+    ]
   },
 
   "packOptions": {
@@ -25,7 +30,11 @@
     "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.0",
     "Microsoft.AspNetCore.DataProtection": "1.0.0",
     "Microsoft.Extensions.Options": "1.0.0",
-    "Newtonsoft.Json": "9.0.1"
+    "Newtonsoft.Json": "9.0.1",
+    "StyleCop.Analyzers": {
+      "version": "1.0.0",
+      "type": "build"
+    }
   },
 
   "frameworks": {
