@@ -16,7 +16,7 @@ before_install:
   - sudo apt-get update -qq
 
 install:
-  - sudo apt-get install -y dotnet-dev-1.0.0-preview2-003121
+  - sudo apt-get install -y dotnet-dev-1.0.0-preview2-003131
 
 script:
   - ./build.sh
