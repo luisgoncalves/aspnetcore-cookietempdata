@@ -6,6 +6,8 @@
 
 Cookie-based *TempData* provider for ASP.NET Core MVC applications. *TempData* values are serialized in BSON and protected via the [data protection API](https://docs.asp.net/en/latest/security/data-protection/index.html).
 
+**NOTE**: ASP.NET Core 1.1.0 will include a built-in cookie-based *TempData* provider.
+
 ## Usage
 
 ### Installation
